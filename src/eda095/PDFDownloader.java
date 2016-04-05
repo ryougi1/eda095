@@ -1,4 +1,4 @@
-package lab1;
+package eda095;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,12 +41,10 @@ public class PDFDownloader {
 
 	private void getPDFLinks(String html) throws MalformedURLException {
 		pdfs = new ArrayList<URL>();
-		Pattern linkPattern = Pattern.compile("href=\"(.*?)\""); //Matches href=\ literally, then captures all optionally;
+		Pattern linkPattern = Pattern.compile("href=\"(.*?.pdf)\""); //Matches href=\ literally, then captures all optionally;
 		Matcher linkMatcher = linkPattern.matcher(html);
 		while (linkMatcher.find()) {
-			if (linkMatcher.group(1).endsWith(".pdf")) {
 				pdfs.add(new URL(linkMatcher.group(1)));
-			}
 		}
 	}
 
@@ -61,7 +59,7 @@ public class PDFDownloader {
 		default:
 			return;
 		}
-		String path = file.getPath()+"\\";
+		String path = file.getPath()+"/";
 		int counter = 0;
 		for (URL u : pdfs) {
 			String s = u.getFile();
