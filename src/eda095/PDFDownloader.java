@@ -17,9 +17,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
 public class PDFDownloader {
-<<<<<<< HEAD
 	private URL url;
-	private static ArrayList<URL> pdfs;
+	private ArrayList<URL> pdfs;
 
 	public PDFDownloader() throws IOException {
 		getURL();
@@ -31,21 +30,7 @@ public class PDFDownloader {
 		this.url = url;
 	}
 
-	private static String downloadHTML(URL url) throws IOException {
-=======
-	private static ArrayList<URL> pdfs;
-
-	private PDFDownloader() throws IOException {
-		getPDFLinks(downloadHTML(getURL()));
-	}
-	
-	private URL getURL() throws MalformedURLException {
-		URL url = new URL(JOptionPane.showInputDialog("Enter URL address: "));
-		return url;
-	}
-
 	private String downloadHTML(URL url) throws IOException {
->>>>>>> 147ecc558828d77352593ab2ec5db99d9c5366c3
 		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
 		String s;
 		StringBuilder sb = new StringBuilder();
@@ -56,29 +41,13 @@ public class PDFDownloader {
 		return sb.toString();
 	}
 
-<<<<<<< HEAD
-	private void getPDFLinks(String html) {
+	private void getPDFLinks(String html) throws MalformedURLException {
 		pdfs = new ArrayList<URL>();
 		Pattern linkPattern = Pattern.compile("href=\"(.*?.pdf)\"");
 		Matcher linkMatcher = linkPattern.matcher(html);
 		while (linkMatcher.find()) {
-				try {
-					pdfs.add(new URL(url, linkMatcher.group(1)));
-				} catch (MalformedURLException e) {
-
-				}
-
+				pdfs.add(new URL(url, linkMatcher.group(1)));
 		}
-
-=======
-	private void getPDFLinks(String html) throws MalformedURLException {
-		pdfs = new ArrayList<URL>();
-		Pattern linkPattern = Pattern.compile("href=\"(.*?.pdf)\""); //Matches href=\ literally, then captures all optionally;
-		Matcher linkMatcher = linkPattern.matcher(html);
-		while (linkMatcher.find()) {
-				pdfs.add(new URL(linkMatcher.group(1)));
-		}
->>>>>>> 147ecc558828d77352593ab2ec5db99d9c5366c3
 	}
 
 	public void download() throws IOException {
@@ -92,17 +61,12 @@ public class PDFDownloader {
 		default:
 			return;
 		}
-<<<<<<< HEAD
 		String path = file.getPath() + "/";
-=======
-		String path = file.getPath()+"/";
->>>>>>> 147ecc558828d77352593ab2ec5db99d9c5366c3
 		int counter = 0;
 		for (URL u : pdfs) {
 			String s = u.getFile();
 			while (s.contains("/")) {
 				int i = s.indexOf("/");
-<<<<<<< HEAD
 				s = s.substring(i + 1, s.length());
 			}
 			Files.copy(u.openStream(), Paths.get(path + s), StandardCopyOption.REPLACE_EXISTING);
@@ -115,24 +79,5 @@ public class PDFDownloader {
 	public static void main(String[] args) throws IOException {
 		PDFDownloader d = new PDFDownloader();
 		d.download();
-//		for (URL url : pdfs) {
-//			System.out.println("test");
-//			System.out.println(url.toString());
-//		}
-=======
-				s = s.substring(i+1, s.length());
-			}
-			Files.copy(u.openStream(), Paths.get(path+s), StandardCopyOption.REPLACE_EXISTING);
-			System.out.println("Saved file " + s + " to: " + "\n"+ path);
-			counter++;
-			}
-		System.out.println("\n" + "All files (" + counter + ") successfully saved.");
-	}
-	
-	public static void main(String[] args) throws IOException {
-		PDFDownloader d = new PDFDownloader();
-		d.download();
-
->>>>>>> 147ecc558828d77352593ab2ec5db99d9c5366c3
 	}
 }
