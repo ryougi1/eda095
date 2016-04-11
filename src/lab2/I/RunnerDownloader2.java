@@ -61,7 +61,9 @@ public class RunnerDownloader2 {
 			}
 			String path = file.getPath() + "/";
 			Runner2 r = new Runner2(pdfs, path);
+			long startTime = System.nanoTime();
 			r.run();
+			System.out.println((System.nanoTime()-startTime)/10000000);
 		}
 		
 		public static void main (String[] args) {

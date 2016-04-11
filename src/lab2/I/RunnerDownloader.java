@@ -62,6 +62,7 @@ public class RunnerDownloader {
 		String path = file.getPath() + "/";
 		int counter = 0;
 		Runner r;
+		long startTime = System.nanoTime();
 		for (URL u : pdfs) {
 			String s = u.getFile();
 			while (s.contains("/")) {
@@ -74,6 +75,7 @@ public class RunnerDownloader {
 			counter++;
 		}
 		System.out.println("\n" + "All files (" + counter + ") successfully saved.");
+		System.out.println((System.nanoTime()-startTime)/10000000);
 	}
 	
 	public static void main (String[] args) {
