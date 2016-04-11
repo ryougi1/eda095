@@ -1,4 +1,4 @@
-package lab1;
+package lab2.I;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,11 +14,11 @@ import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 
-public class PDFDownloader {
+public class RunnerDownloader {
 	private URL url;
 	private ArrayList<URL> pdfs;
 
-	public PDFDownloader() throws IOException {
+	public RunnerDownloader() throws IOException {
 		getURL();
 		getPDFLinks(downloadHTML(url));
 	}
@@ -63,24 +61,28 @@ public class PDFDownloader {
 		}
 		String path = file.getPath() + "/";
 		int counter = 0;
+		Runner r;
 		for (URL u : pdfs) {
 			String s = u.getFile();
 			while (s.contains("/")) {
 				int i = s.indexOf("/");
 				s = s.substring(i + 1, s.length());
 			}
-			Files.copy(u.openStream(), Paths.get(path + s), StandardCopyOption.REPLACE_EXISTING);
+			r = new Runner(u, Paths.get(path + s));
+			r.run();
 			System.out.println("Saved file " + s + " to: " + "\n" + path);
 			counter++;
 		}
 		System.out.println("\n" + "All files (" + counter + ") successfully saved.");
 	}
-
-	public static void main(String[] args) throws IOException {
-		PDFDownloader d = new PDFDownloader();
+	
+	public static void main (String[] args) {
 		try {
-			d.download();
-		} catch (Exception e) {
+			RunnerDownloader rd = new RunnerDownloader();
+			rd.download();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }
