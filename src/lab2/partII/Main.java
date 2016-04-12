@@ -26,10 +26,20 @@ public class Main {
 		getURL();
 		getPDFLinks(downloadHTML(url));
 		setPath();
+//		for (int i = 0; i < THREAD_MAX; i++) {
+//			RunnerT rt = new RunnerT(this, path);
+//			rt.start();
+//			
+			new Thread(new RunnerR(this, path)).start();
+//		}
 	}
 	
-	public synchronized ArrayList<URL> getList() {
-			return pdfs;
+	public synchronized URL getNext() {
+		if (!pdfs.isEmpty()) {
+			return pdfs.remove(0);				
+		} else {
+			return null;
+		}
 	}
 	
 	private  void getURL() throws MalformedURLException {
@@ -91,16 +101,9 @@ public class Main {
 //	}
 	
 	/** To start the non-executor versions uncomment following methods **/
-	public void start() {
-		Counter c = new Counter();
-		for (int i = c.getCount(); i < THREAD_MAX; c.countUp()) {
-			RunnerT rt = new RunnerT(getList(), path, c);
-			rt.start();
-		}
-	}
+
 	
 	public static void main (String[] args) throws IOException {
 		Main m = new Main();
-		m.start();
 	}
 }

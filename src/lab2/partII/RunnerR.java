@@ -5,13 +5,12 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 
-public class RunnerT extends Thread {
+public class RunnerR implements Runnable{
 	private String path;
 	private Main m;
 
-	public RunnerT(Main m, String path) {
+	public RunnerR(Main m, String path) {
 		this.path = path;
 		this.m = m;
 	}
@@ -31,4 +30,5 @@ public class RunnerT extends Thread {
 			}
 		}
 	}
+
 }
