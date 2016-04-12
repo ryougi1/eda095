@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,15 +18,20 @@ import javax.swing.JOptionPane;
 
 public class Main {
 	private URL url;
+	private static String path;
 	private static ArrayList<URL> pdfs;
-	private final int THREAD_MAX;
+	private final static int THREAD_MAX = 10;
 	
 	public Main() throws IOException {
-		THREAD_MAX = 10;
 		getURL();
 		getPDFLinks(downloadHTML(url));
+		setPath();
 	}
-
+	
+	public synchronized ArrayList<URL> getList() {
+			return pdfs;
+	}
+	
 	private  void getURL() throws MalformedURLException {
 		URL url = new URL(JOptionPane.showInputDialog("Enter URL address: "));
 		this.url = url;
@@ -52,9 +57,7 @@ public class Main {
 		}
 	}
 	
-	public static void main (String[] args) throws IOException {
-		Main m = new Main();
-		
+	private void setPath() {
 		File file;
 		JFileChooser jf = new JFileChooser();
 		jf.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -65,15 +68,39 @@ public class Main {
 		default:
 			return;
 		}
-		String path = file.getPath() + "/";
-		for (URL u : pdfs) {
-			String s = u.getFile();
-			while (s.contains("/")) {
-				int i = s.indexOf("/");
-				s = s.substring(i + 1, s.length());
-			}
-			RunnerThread rt = new RunnerThread(u, Paths.get(path + s));
+		path = file.getPath() + "/";
+	}
+	
+	/** To start the executor version uncomment following start method and main method **/
+//	public void start() {
+//		ExecutorService executor = Executors.newFixedThreadPool(THREAD_MAX);
+//		for (URL u : pdfs) {
+//			String s = u.getFile();
+//			while (s.contains("/")) {
+//				int i = s.indexOf("/");
+//				s = s.substring(i + 1, s.length());
+//			}
+//			executor.submit(new RunnerE(u, Paths.get(path + s)));
+//		}
+//		executor.shutdown();
+//	}
+//	
+//	public static void main (String[] args) throws IOException {
+//		Main m = new Main(); //Initialize necessary variables
+//		m.start();
+//	}
+	
+	/** To start the non-executor versions uncomment following methods **/
+	public void start() {
+		Counter c = new Counter();
+		for (int i = c.getCount(); i < THREAD_MAX; c.countUp()) {
+			RunnerT rt = new RunnerT(getList(), path, c);
 			rt.start();
 		}
+	}
+	
+	public static void main (String[] args) throws IOException {
+		Main m = new Main();
+		m.start();
 	}
 }
