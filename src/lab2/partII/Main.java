@@ -30,7 +30,7 @@ public class Main {
 //			RunnerT rt = new RunnerT(this, path);
 //			rt.start();
 //			
-			new Thread(new RunnerR(this, path)).start();
+//			new Thread(new RunnerR(this, path)).start();
 //		}
 	}
 	
@@ -82,28 +82,28 @@ public class Main {
 	}
 	
 	/** To start the executor version uncomment following start method and main method **/
-//	public void start() {
-//		ExecutorService executor = Executors.newFixedThreadPool(THREAD_MAX);
-//		for (URL u : pdfs) {
-//			String s = u.getFile();
-//			while (s.contains("/")) {
-//				int i = s.indexOf("/");
-//				s = s.substring(i + 1, s.length());
-//			}
-//			executor.submit(new RunnerE(u, Paths.get(path + s)));
-//		}
-//		executor.shutdown();
-//	}
-//	
-//	public static void main (String[] args) throws IOException {
-//		Main m = new Main(); //Initialize necessary variables
-//		m.start();
-//	}
+	public void start() {
+		ExecutorService executor = Executors.newFixedThreadPool(THREAD_MAX);
+		for (URL u : pdfs) {
+			String s = u.getFile();
+			while (s.contains("/")) {
+				int i = s.indexOf("/");
+				s = s.substring(i + 1, s.length());
+			}
+			executor.submit(new RunnerE(u, Paths.get(path + s)));
+		}
+		executor.shutdown();
+	}
+	
+	public static void main (String[] args) throws IOException {
+		Main m = new Main(); //Initialize necessary variables
+		m.start();
+	}
 	
 	/** To start the non-executor versions uncomment following methods **/
 
 	
-	public static void main (String[] args) throws IOException {
-		Main m = new Main();
-	}
+//	public static void main (String[] args) throws IOException {
+//		Main m = new Main();
+//	}
 }
