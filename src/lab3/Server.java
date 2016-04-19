@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 
 public class Server {
 	private ServerSocket server;
-	private static ArrayList<Socket> clients;
+	private ArrayList<Socket> clients;
 	private ExecutorService es;
 	
 	public Server(int port) throws IOException {
@@ -18,14 +18,14 @@ public class Server {
 		clients = new ArrayList<Socket>();
 	}
 	
-	public synchronized boolean addConnection(Socket s ) {
+	public synchronized boolean addConnection(Socket s) {
 		if(clients.contains(s)) {
 			return false;
 		}
 		return clients.add(s);
 	}
 	
-	public static synchronized void broadcast(byte[] buff, int len) {
+	public synchronized void broadcast(byte[] buff, int len) {
 		for(Socket s: clients) {
 			try {
 				OutputStream os = s.getOutputStream();
@@ -44,7 +44,7 @@ public class Server {
 		try {
 			while((socket = server.accept()) != null) {
 				addConnection(socket);
-				es.submit(new ServerThread(socket));
+				es.submit(new ServerThread(socket, this));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

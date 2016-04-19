@@ -7,9 +7,11 @@ import java.net.SocketException;
 
 public class ServerThread implements Runnable {
 	private Socket socket;
+	private Server server;
 
-	public ServerThread(Socket socket) {
+	public ServerThread(Socket socket, Server server) {
 		this.socket = socket;
+		this.server = server;
 	}
 
 	public void run() {
@@ -25,7 +27,7 @@ public class ServerThread implements Runnable {
 			int read = 0;
 			try {
 				read = is.read(buffer);
-				Server.broadcast(buffer, read);
+				server.broadcast(buffer, read);
 			} catch (SocketException se) {
 				System.out.println(socket.getInetAddress().getHostName() + " has disconnected.");	
 				return;
