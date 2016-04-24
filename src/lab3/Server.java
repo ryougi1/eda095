@@ -1,54 +1,86 @@
 package lab3;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class Server {
 	private ServerSocket server;
-	private ArrayList<Socket> clients;
-	private ExecutorService es;
+	private ArrayList<ClientThread> clients;
 	
-	public Server(int port) throws IOException {
-		server = new ServerSocket(port);
-		clients = new ArrayList<Socket>();
-	}
-	
-	public synchronized boolean addConnection(Socket s) {
-		if(clients.contains(s)) {
-			return false;
+	public Server(int port) {
+		try {
+			server = new ServerSocket(port);
+			clients = new ArrayList<ClientThread>();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		return clients.add(s);
 	}
-	
-	public synchronized void broadcast(byte[] buff, int len) {
-		for(Socket s: clients) {
-			try {
-				OutputStream os = s.getOutputStream();
-				os.write(buff, 0, len);
-				os.flush();
-			} catch (IOException e) {
-				clients.remove(s);
-				e.printStackTrace();
-			}
+
+	private synchronized void broadcast(String msg) {
+		for(ClientThread ct: clients) {
+			ct.writeMessage(msg);
 		}
 	}
 	
-	public void run() {
+	public void start() {
 		Socket socket;
-		es = Executors.newFixedThreadPool(10);
 		try {
 			while((socket = server.accept()) != null) {
-				addConnection(socket);
-				es.submit(new ServerThread(socket, this));
+				ClientThread t = new ClientThread(socket);
+				clients.add(t);
+				t.start();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	class ClientThread extends Thread {
+		Socket socket;
+		ObjectInputStream sinput;
+		ObjectOutputStream soutput;
+		String username;
+		
+		ClientThread(Socket socket) {
+			this.socket = socket;
+			try {
+				sinput = new ObjectInputStream(socket.getInputStream());
+				soutput = new ObjectOutputStream(socket.getOutputStream());
+				username = (String) sinput.readObject();
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			} catch (ClassNotFoundException e) {
+			}
+		}
+		
+		private void writeMessage(String msg) {
+			try {
+				soutput.writeObject(msg);
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
+		}
+		
+		public void run () {
+			while (true) {
+				try {
+					String msg = (String) sinput.readObject();
+					broadcast(username + ": " + msg);
+				} catch (ClassNotFoundException | IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public static void main (String[] args) {
+		Server s = new Server(2626);
+		s.start();
 	}
 
 }
