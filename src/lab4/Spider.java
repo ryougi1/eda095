@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,9 +21,8 @@ public class Spider {
 	ArrayList<URL> toCrawl;
 	ArrayList<URL> hasCrawled;
 	ArrayList<String> mails;
-	long startTime;
 
-	public Spider(String URLString, long startTime) {
+	public Spider(String URLString) {
 		try {
 			toCrawl = new ArrayList<URL>();
 			toCrawl.add(new URL(URLString));
@@ -30,20 +31,11 @@ public class Spider {
 		}
 		hasCrawled = new ArrayList<URL>();
 		mails = new ArrayList<String>();
-		this.startTime = startTime;
 	}
 
-//	public void start() {
-//		startTime = System.nanoTime();
-//		ExecutorService es = Executors.newFixedThreadPool(10);
-//		for (int i = 0; i < 10; i++) {
-//			es.submit(new Processor(this));
-//		}
-//		es.shutdown();
-//	}
 
 	public synchronized URL getNextURL() {
-		if (toCrawl.isEmpty()) {
+		while (toCrawl.isEmpty()) {
 			try {
 				wait();
 			} catch (InterruptedException ie) {
@@ -54,15 +46,14 @@ public class Spider {
 	}
 
 	public synchronized void addToCrawl(URL u) {
-		if (!hasCrawled.contains(u)) {
+		if (!hasCrawled.contains(u) && !toCrawl.contains(u)) {
 			toCrawl.add(u);
 			notifyAll();
 		}
 	}
 
-	public boolean isDone() {
-		if (hasCrawled.size() > 2000) {
-			System.out.println((System.nanoTime() - startTime) / 10000000);
+	public synchronized boolean isDone() {
+		if (hasCrawled.size() + toCrawl.size() > 2000) {
 			return true;
 		}
 		return false;
@@ -87,9 +78,12 @@ public class Spider {
 
 	private void saveURL(String path) {
 		try {
-			File file = new File(path, "URLs.txt");
+			File file = new File(path, "URLs1.txt");
 			Writer writer = new BufferedWriter(new FileWriter(file));
 			for (URL u : hasCrawled) {
+				writer.write(u.toString() + "\n");
+			}
+			for (URL u : toCrawl)  {
 				writer.write(u.toString() + "\n");
 			}
 			writer.close();
@@ -112,11 +106,22 @@ public class Spider {
 	}
 
 	public static void main(String[] args) {
-		Spider spider = new Spider("http://cs.lth.se/", System.nanoTime());
+		Spider spider = new Spider("http://cs.lth.se/");
+		ArrayList<Processor> processors = new ArrayList<Processor>();
+		long startTime = System.nanoTime();
 		for (int i = 0; i < 10; i++) {
-			new Processor(spider).start();;
+			processors.add(new Processor(spider));
+			processors.get(i).start();
 		}
-		
+		for (Processor p : processors) {
+		    try {
+				p.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println((System.nanoTime() - startTime) / 1000000000 + " s");
+		spider.save();
 	}
 
 }

@@ -36,7 +36,7 @@ public class MonothreadCrawler {
 	}
 
 	public void crawl() {
-		while (hasCrawled.size() < 100 && toCrawl.size() > 0) {
+		while (hasCrawled.size() < 20 && toCrawl.size() > 0) {
 			URL currentURL = toCrawl.remove(0);
 			URLConnection URLcon;
 			try {

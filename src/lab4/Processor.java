@@ -41,7 +41,6 @@ public class Processor extends Thread {
 					}
 				}
 				for (Element frame : frames) {
-					System.out.println(frame.toString());
 					URL u = new URL(url, frame.toString());
 					spider.addToCrawl(u);
 				}
