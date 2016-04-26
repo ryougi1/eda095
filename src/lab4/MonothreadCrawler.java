@@ -9,9 +9,6 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 
 import javax.swing.JFileChooser;
@@ -60,15 +57,21 @@ public class MonothreadCrawler {
 		try {
 			InputStream is = url.openStream();
 			Document doc = Jsoup.parse(is, "UTF-8", url.toString());
-			Elements links = doc.getElementsByTag("a");
+			Elements links = doc.select("a[href]");
+			Elements frames = doc.select("frame[src]");
 			for (Element link : links) {
 				String urlString = link.absUrl("href");
 				if (urlString.startsWith("mailto:")) {
 					handleMail(urlString);
-				} else if (!urlString.equals("")) {
+				} else {
 					URL u = new URL(urlString);
 					toCrawl.add(u);
 				}
+			}
+			for (Element frame : frames) {
+				System.out.println(frame.toString());
+				URL u = new URL(url, frame.toString());
+				toCrawl.add(u);
 			}
 			is.close();
 		} catch (IOException ioe) {
@@ -79,6 +82,7 @@ public class MonothreadCrawler {
 	private void handleMail(String urlString) {
 		String mailAddress = urlString.substring(urlString.indexOf(":") + 1, urlString.length());
 		mailAddress = mailAddress.replaceAll("%40", "@");
+		mailAddress = mailAddress.toLowerCase();
 		if (!mails.contains(mailAddress)) {
 			mails.add(mailAddress);
 		}
@@ -129,7 +133,9 @@ public class MonothreadCrawler {
 
 	public static void main(String[] args) {
 		MonothreadCrawler mc = new MonothreadCrawler("http://cs.lth.se/");
+		long startTime = System.nanoTime();
 		mc.crawl();
+		System.out.println((System.nanoTime() - startTime) / 10000000);
 		mc.save();
 	}
 
