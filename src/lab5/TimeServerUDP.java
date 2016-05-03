@@ -12,6 +12,12 @@ public class TimeServerUDP {
 	private DatagramSocket socket;
 	private DatagramPacket dp;
 
+	/**
+	 * Creates the server side socket on a given port number and a holder byte
+	 * array receiving data.
+	 * 
+	 * @param port
+	 */
 	public TimeServerUDP(int port) {
 		try {
 			socket = new DatagramSocket(port);
@@ -22,7 +28,12 @@ public class TimeServerUDP {
 		}
 	}
 
-	//Listen on socket, forever. Process message.
+	/**
+	 * Main process, runs until stopped. Listens for connecting clients,
+	 * receives commands and handles appropriately.
+	 * 
+	 * @throws IOException
+	 */
 	public void run() throws IOException {
 		DateTimeFormatter formatter;
 		String output;
@@ -43,11 +54,17 @@ public class TimeServerUDP {
 			default:
 				respond("INVALID INPUT", dp);
 			}
-				
+
 		}
 	}
 
-	//Create response packet and send it
+	/**
+	 * Creates a response message which is sent back to the client that
+	 * requested it.
+	 * 
+	 * @param response
+	 * @param target
+	 */
 	private void respond(String response, DatagramPacket target) {
 		try {
 			byte[] data = response.getBytes();
