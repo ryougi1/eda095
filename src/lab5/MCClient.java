@@ -2,23 +2,23 @@ package lab5;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 public class MCClient {
 	private MulticastSocket ms;
-	private DatagramPacket rdp;
-	private InetAddress ia;
+	private DatagramSocket socket;
 	private InetAddress serverAddress;
+	private InetAddress ia;
 
 	public MCClient() {
 		try {
 			ms = new MulticastSocket();
-			ms.setTimeToLive(1);
 			ia = InetAddress.getByName("experiment.mcast.net");
-
-			byte[] rdata = new byte[65507];
-			rdp = new DatagramPacket(rdata, rdata.length);
+			ms.joinGroup(ia);
+			ms.setTimeToLive(5);
+			socket = new DatagramSocket();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -26,42 +26,67 @@ public class MCClient {
 
 	public void discover() {
 		byte[] discoverMsg = "HELLO".getBytes();
-		DatagramPacket dp = new DatagramPacket(discoverMsg, discoverMsg.length, ia, 4099);
 		try {
+			DatagramPacket dp = new DatagramPacket(discoverMsg, discoverMsg.length, ia, 4199);
 			ms.send(dp);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		setUp();
+	}
 
-		try {
-			ms.receive(rdp);
-		} catch (IOException e) {
-			e.printStackTrace();
+	public void setUp() {
+		while (serverAddress == null) {
+			try {
+				//TODO flytta upp
+				byte[] discoverResponse = new byte[65507];
+				DatagramPacket rdp = new DatagramPacket(discoverResponse, discoverResponse.length);
+				ms.receive(rdp);
+				String responseMsg = new String(rdp.getData(), 0, rdp.getLength());
+				serverAddress = InetAddress.getByName(responseMsg);
+				String address = serverAddress.toString();
+				System.out.println("Found server on: " + address);
+				getDateTime();
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		serverAddress = rdp.getAddress();
-		String address = new String(rdp.getData(), 0, rdp.getLength());
-		System.out.println("Found server on: " + address);
 	}
 
 	public void getDateTime() {
-		try {
-			byte[] msg = "DATETIME".getBytes();
-			DatagramPacket dp = new DatagramPacket(msg, msg.length, serverAddress, 4099);
-			ms.send(dp);
+		while (true) {
+			try {
+				int ch;
+				String s = new String();
+				do {
+					ch = System.in.read();
+					if (ch != '\n') {
+						s = s + (char) ch;
+					}
+				} while (ch != '\n');
+				System.out.println("Sending message: " + s);
+				byte[] msg = s.getBytes();
+				DatagramPacket dp = new DatagramPacket(msg, msg.length, serverAddress, 30000);
+				socket.send(dp);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			try {
+				byte[] data = new byte[65507];
+				DatagramPacket rdp = new DatagramPacket(data, data.length);
+				socket.receive(rdp);
+				String response = new String(rdp.getData(), 0, rdp.getLength());
+				System.out.println(response);
 
-			ms.receive(rdp);
-			String dateTime = new String(rdp.getData(), 0, rdp.getLength());
-			System.out.println(dateTime);
-		} catch (IOException e) {
-			e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-
-		ms.close();
 	}
 
 	public static void main(String args[]) {
 		MCClient c = new MCClient();
 		c.discover();
-		c.getDateTime();
 	}
 }

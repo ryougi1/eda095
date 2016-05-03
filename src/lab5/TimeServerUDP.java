@@ -42,12 +42,12 @@ public class TimeServerUDP {
 			String command = new String(dp.getData(), 0, dp.getLength());
 			switch (command) {
 			case "DATE":
-				formatter = DateTimeFormatter.ofPattern("d MMM uuuu", Locale.FRENCH);
+				formatter = DateTimeFormatter.ofPattern("d MMM uuuu", Locale.FRANCE);
 				output = LocalDateTime.now().format(formatter);
 				respond(output, dp);
 				break;
 			case "TIME":
-				formatter = DateTimeFormatter.ofPattern("HH:mm");
+				formatter = DateTimeFormatter.ofPattern("HH:mm", Locale.FRANCE);
 				output = LocalDateTime.now().format(formatter);
 				respond(output, dp);
 				break;
